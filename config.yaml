@@ -1,0 +1,21 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  static_dir: "templates"
+
+database:
+  path: "./data/track.db"
+
+tracking:
+  default_domain: "http://localhost:8080"
+  code_length: 6
+  heartbeat_interval: 30
+
+geo:
+  ip_api_url: "http://ip-api.com/json/"
+  ip_fallback: true
+
+admin:
+  username: "admin"
+  password: "changeme123"
+  session_secret: "change-this-secret-in-production"

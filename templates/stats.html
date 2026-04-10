@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据统计 - 追踪平台</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+    <div class="admin-container">
+        <main class="main-content" style="margin-left: 0;">
+            <header class="content-header">
+                <h1>📈 数据统计面板</h1>
+                <div class="header-actions">
+                    <a href="/admin" class="btn btn-secondary">← 返回后台</a>
+                </div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalVisits">0</div>
+                    <div class="stat-label">总访问量</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalDuration">0s</div>
+                    <div class="stat-label">总停留时长</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgDuration">0s</div>
+                    <div class="stat-label">平均停留时长</div>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="chart-container">
+                    <h3>📊 访问趋势（近7天）</h3>
+                    <div id="visitTrendChart" class="bar-chart-container"></div>
+                </div>
+                <div class="chart-container">
+                    <h3>📱 设备分布</h3>
+                    <div id="deviceDistChart" class="pie-chart-container"></div>
+                </div>
+            </div>
+
+            <div class="map-container">
+                <h3>🗺️ 访问地理位置分布</h3>
+                <div id="map" class="map"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let map = null;
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/admin/stats');
+                const result = await response.json();
+                
+                if (result.code === 0 && result.data) {
+                    const data = result.data;
+                    document.getElementById('totalVisits').textContent = data.total_visits || 0;
+                    document.getElementById('totalDuration').textContent = (data.total_duration || 0) + 's';
+                    document.getElementById('avgDuration').textContent = Math.round(data.avg_duration || 0) + 's';
+
+                    renderTrendChart(data.visit_trend || []);
+                    renderDeviceChart(data.device_distribution || {});
+                    renderMap(data.geo_distribution || []);
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        function renderTrendChart(trend) {
+            const chart = document.getElementById('visitTrendChart');
+            if (!trend || trend.length === 0) {
+                chart.innerHTML = '<p class="no-data">暂无数据</p>';
+                return;
+            }
+
+            const maxCount = Math.max(...trend.map(t => t.count), 1);
+            chart.innerHTML = '<div class="bar-chart-container">' + trend.map(item => {
+                const height = Math.max((item.count / maxCount) * 150, 4);
+                return `
+                    <div class="bar-item">
+                        <div class="bar" style="height: ${height}px">
+                            <span class="bar-value">${item.count}</span>
+                        </div>
+                        <div class="bar-label">${item.date.slice(5)}</div>
+                    </div>
+                `;
+            }).join('') + '</div>';
+        }
+
+        function renderDeviceChart(distribution) {
+            const chart = document.getElementById('deviceDistChart');
+            if (!distribution) {
+                chart.innerHTML = '<p class="no-data">暂无数据</p>';
+                return;
+            }
+
+            const total = Object.values(distribution).reduce((a, b) => a + b, 0);
+            if (total === 0) {
+                chart.innerHTML = '<p class="no-data">暂无数据</p>';
+                return;
+            }
+
+            const colors = { pc: '#667eea', mobile: '#764ba2', tablet: '#f093fb' };
+            const labels = { pc: '电脑', mobile: '手机', tablet: '平板' };
+            chart.innerHTML = '<div class="pie-chart-container">' + Object.entries(distribution).map(([device, count]) => {
+                const percent = ((count / total) * 100).toFixed(1);
+                return `
+                    <div class="pie-item">
+                        <div class="pie-color" style="background: ${colors[device] || '#999'}"></div>
+                        <div class="pie-label">${labels[device] || device}: ${count} (${percent}%)</div>
+                    </div>
+                `;
+            }).join('') + '</div>';
+        }
+
+        function renderMap(geoPoints) {
+            map = L.map('map').setView([35, 105], 4);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            if (!geoPoints || geoPoints.length === 0) {
+                return;
+            }
+
+            geoPoints.forEach(point => {
+                if (point.lat && point.lng) {
+                    L.circle([point.lat, point.lng], {
+                        radius: Math.max(point.count * 200, 500),
+                        color: '#667eea',
+                        fillColor: '#667eea',
+                        fillOpacity: 0.5
+                    }).addTo(map).bindPopup(`访问次数: ${point.count}`);
+                }
+            });
+
+            if (geoPoints.length === 1) {
+                map.setView([geoPoints[0].lat, geoPoints[0].lng], 12);
+            } else {
+                const bounds = L.latLngBounds(geoPoints.map(p => [p.lat, p.lng]));
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+
+        loadStats();
+    </script>
+</body>
+</html>

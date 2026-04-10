@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据追踪平台 - 管理后台</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+    <div class="admin-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📊 数据追踪平台</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="shortlinks">
+                    <span class="icon">🔗</span> 短链接管理
+                </a>
+                <a href="#" class="nav-item" data-page="visits">
+                    <span class="icon">📋</span> 访问记录
+                </a>
+                <a href="#" class="nav-item" data-page="stats">
+                    <span class="icon">📈</span> 数据统计
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="content-header">
+                <h1 id="pageTitle">短链接管理</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="createBtn">+ 创建短链接</button>
+                </div>
+            </header>
+
+            <!-- 统计卡片 -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-value" id="statVisits">0</div>
+                    <div class="stat-label">总访问量</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statLinks">0</div>
+                    <div class="stat-label">短链接数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statDuration">0s</div>
+                    <div class="stat-label">总停留时长</div>
+                </div>
+            </div>
+
+            <!-- 短链接列表 -->
+            <div id="shortlinksPage" class="page-section active">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">短链接列表</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>短链接</th>
+                                    <th>原始URL</th>
+                                    <th>访问量</th>
+                                    <th>创建时间</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="shortlinksTableBody">
+                                <tr><td colspan="6" class="loading">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="shortlinksPagination"></div>
+                </div>
+            </div>
+
+            <!-- 访问记录 -->
+            <div id="visitsPage" class="page-section">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">访问记录</span>
+                        <div class="filters">
+                            <select id="visitCodeFilter" class="filter-select">
+                                <option value="">全部链接</option>
+                            </select>
+                            <button class="btn btn-secondary btn-small" id="exportBtn">📥 导出CSV</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>IP地址</th>
+                                    <th>地理位置</th>
+                                    <th>经纬度</th>
+                                    <th>设备信息</th>
+                                    <th>停留时长</th>
+                                    <th>访问时间</th>
+                                </tr>
+                            </thead>
+                            <tbody id="visitsTableBody">
+                                <tr><td colspan="6" class="loading">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="visitsPagination"></div>
+                </div>
+            </div>
+
+            <!-- 数据统计 -->
+            <div id="statsPage" class="page-section">
+                <div class="chart-row">
+                    <div class="chart-container">
+                        <h3>📊 访问趋势（近7天）</h3>
+                        <div id="visitTrendChart" class="bar-chart-container"></div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>📱 设备分布</h3>
+                        <div id="deviceDistChart" class="pie-chart-container"></div>
+                    </div>
+                </div>
+                <div class="map-container">
+                    <h3>🗺️ 访问地理位置分布</h3>
+                    <div id="map" class="map"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 创建短链接模态框 -->
+    <div class="modal" id="createModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>创建短链接</h3>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="originalUrl">目标文章URL</label>
+                    <input type="url" id="originalUrl" placeholder="https://example.com/article/123">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelBtn">取消</button>
+                <button class="btn btn-primary" id="submitBtn">创建</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/static/js/admin.js"></script>
+</body>
+</html>

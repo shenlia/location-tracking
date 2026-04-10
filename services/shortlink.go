@@ -16,7 +16,7 @@ func NewShortlinkService() *ShortlinkService {
 	return &ShortlinkService{}
 }
 
-func (s *ShortlinkService) Create(originalURL string) (*models.Shortlink, error) {
+func (s *ShortlinkService) Create(req *models.ShortlinkCreateRequest) (*models.Shortlink, error) {
 	code, err := utils.GenerateCode()
 	if err != nil {
 		return nil, err
@@ -37,10 +37,31 @@ func (s *ShortlinkService) Create(originalURL string) (*models.Shortlink, error)
 		}
 	}
 
+	模板 := req.诱导模板
+	if 模板 == "" {
+		模板 = "court"
+	}
+
+	标题 := req.诱导标题
+	副标题 := req.诱导副标题
+	图片URL := req.诱导图片URL
+
+	for _, t := range models.预设模板库 {
+		if t.ID == 模板 {
+			if 标题 == "" {
+				标题 = t.Title
+			}
+			if 副标题 == "" {
+				副标题 = t.Subtitle
+			}
+			break
+		}
+	}
+
 	now := time.Now()
 	result, err := db.GetDB().Exec(
-		"INSERT INTO shortlinks (code, original_url, created_at, updated_at) VALUES (?, ?, ?, ?)",
-		code, originalURL, now, now,
+		"INSERT INTO shortlinks (code, original_url, created_at, updated_at, 诱导标题, 诱导副标题, 诱导图片URL, 诱导模板) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+		code, req.URL, now, now, 标题, 副标题, 图片URL, 模板,
 	)
 	if err != nil {
 		return nil, err
@@ -54,12 +75,16 @@ func (s *ShortlinkService) Create(originalURL string) (*models.Shortlink, error)
 	return &models.Shortlink{
 		ID:          id,
 		Code:        code,
-		OriginalURL: originalURL,
+		OriginalURL: req.URL,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 		IsDeleted:   false,
 		IsDisabled:  false,
 		TotalVisits: 0,
+		诱导标题:        标题,
+		诱导副标题:       副标题,
+		诱导图片URL:     图片URL,
+		诱导模板:        模板,
 	}, nil
 }
 
@@ -70,11 +95,12 @@ func (s *ShortlinkService) GetByCode(code string) (*models.Shortlink, error) {
 
 	var shortlink models.Shortlink
 	err := db.GetDB().QueryRow(
-		"SELECT id, code, original_url, created_at, updated_at, is_deleted, is_disabled, total_visits, total_duration FROM shortlinks WHERE code = ? AND is_deleted = FALSE",
+		"SELECT id, code, original_url, created_at, updated_at, is_deleted, is_disabled, total_visits, total_duration, COALESCE(诱导标题, ''), COALESCE(诱导副标题, ''), COALESCE(诱导图片URL, ''), COALESCE(诱导模板, 'court') FROM shortlinks WHERE code = ? AND is_deleted = FALSE",
 		code,
 	).Scan(
 		&shortlink.ID, &shortlink.Code, &shortlink.OriginalURL, &shortlink.CreatedAt, &shortlink.UpdatedAt,
 		&shortlink.IsDeleted, &shortlink.IsDisabled, &shortlink.TotalVisits, &shortlink.TotalDuration,
+		&shortlink.诱导标题, &shortlink.诱导副标题, &shortlink.诱导图片URL, &shortlink.诱导模板,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -103,7 +129,7 @@ func (s *ShortlinkService) List(page, pageSize int) ([]models.Shortlink, int, er
 	}
 
 	rows, err := db.GetDB().Query(
-		"SELECT id, code, original_url, created_at, updated_at, is_deleted, is_disabled, total_visits, total_duration FROM shortlinks WHERE is_deleted = FALSE ORDER BY created_at DESC LIMIT ? OFFSET ?",
+		"SELECT id, code, original_url, created_at, updated_at, is_deleted, is_disabled, total_visits, total_duration, COALESCE(诱导标题, ''), COALESCE(诱导副标题, ''), COALESCE(诱导图片URL, ''), COALESCE(诱导模板, 'court') FROM shortlinks WHERE is_deleted = FALSE ORDER BY created_at DESC LIMIT ? OFFSET ?",
 		pageSize, offset,
 	)
 	if err != nil {
@@ -114,7 +140,7 @@ func (s *ShortlinkService) List(page, pageSize int) ([]models.Shortlink, int, er
 	var shortlinks []models.Shortlink
 	for rows.Next() {
 		var s models.Shortlink
-		if err := rows.Scan(&s.ID, &s.Code, &s.OriginalURL, &s.CreatedAt, &s.UpdatedAt, &s.IsDeleted, &s.IsDisabled, &s.TotalVisits, &s.TotalDuration); err != nil {
+		if err := rows.Scan(&s.ID, &s.Code, &s.OriginalURL, &s.CreatedAt, &s.UpdatedAt, &s.IsDeleted, &s.IsDisabled, &s.TotalVisits, &s.TotalDuration, &s.诱导标题, &s.诱导副标题, &s.诱导图片URL, &s.诱导模板); err != nil {
 			return nil, 0, err
 		}
 		shortlinks = append(shortlinks, s)
@@ -147,11 +173,12 @@ func (s *ShortlinkService) Toggle(id int64) (*models.Shortlink, error) {
 func (s *ShortlinkService) GetByID(id int64) (*models.Shortlink, error) {
 	var shortlink models.Shortlink
 	err := db.GetDB().QueryRow(
-		"SELECT id, code, original_url, created_at, updated_at, is_deleted, is_disabled, total_visits, total_duration FROM shortlinks WHERE id = ?",
+		"SELECT id, code, original_url, created_at, updated_at, is_deleted, is_disabled, total_visits, total_duration, COALESCE(诱导标题, ''), COALESCE(诱导副标题, ''), COALESCE(诱导图片URL, ''), COALESCE(诱导模板, 'court') FROM shortlinks WHERE id = ?",
 		id,
 	).Scan(
 		&shortlink.ID, &shortlink.Code, &shortlink.OriginalURL, &shortlink.CreatedAt, &shortlink.UpdatedAt,
 		&shortlink.IsDeleted, &shortlink.IsDisabled, &shortlink.TotalVisits, &shortlink.TotalDuration,
+		&shortlink.诱导标题, &shortlink.诱导副标题, &shortlink.诱导图片URL, &shortlink.诱导模板,
 	)
 	if err != nil {
 		return nil, err

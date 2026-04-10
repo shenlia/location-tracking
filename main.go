@@ -55,6 +55,7 @@ func main() {
 	api := r.Group("/api")
 	{
 		api.POST("/shortlinks/create", shortlinkHandler.Create)
+		api.GET("/shortlinks/templates", shortlinkHandler.GetTemplates)
 		api.POST("/visits/submit", visitHandler.Submit)
 		api.POST("/visits/duration", visitHandler.UpdateDuration)
 		api.POST("/visits/heartbeat", func(c *gin.Context) {

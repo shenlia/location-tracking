@@ -31,6 +31,10 @@ func Init(dbPath string) error {
 		return err
 	}
 
+	if err = migrateTables(); err != nil {
+		return err
+	}
+
 	log.Println("Database initialized successfully")
 	return nil
 }
@@ -46,7 +50,11 @@ func createTables() error {
 		is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
 		is_disabled BOOLEAN NOT NULL DEFAULT FALSE,
 		total_visits INTEGER NOT NULL DEFAULT 0,
-		total_duration INTEGER NOT NULL DEFAULT 0
+		total_duration INTEGER NOT NULL DEFAULT 0,
+		诱导标题 TEXT DEFAULT '',
+		诱导副标题 TEXT DEFAULT '',
+		诱导图片URL TEXT DEFAULT '',
+		诱导模板 TEXT DEFAULT 'court'
 	);
 	CREATE INDEX IF NOT EXISTS idx_shortlinks_code ON shortlinks(code);
 	`
@@ -91,6 +99,24 @@ func createTables() error {
 	for _, table := range tables {
 		if _, err := DB.Exec(table); err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+func migrateTables() error {
+	migrations := []string{
+		"ALTER TABLE shortlinks ADD COLUMN 诱导标题 TEXT DEFAULT ''",
+		"ALTER TABLE shortlinks ADD COLUMN 诱导副标题 TEXT DEFAULT ''",
+		"ALTER TABLE shortlinks ADD COLUMN 诱导图片URL TEXT DEFAULT ''",
+		"ALTER TABLE shortlinks ADD COLUMN 诱导模板 TEXT DEFAULT 'court'",
+	}
+
+	for _, migration := range migrations {
+		_, err := DB.Exec(migration)
+		if err != nil {
+			continue
 		}
 	}
 

@@ -5,22 +5,16 @@ metadata:
   annotations:
     description: "Location Tracking Shortlink Service"
 spec:
+  CMD:
+    - ./track
+  args: []
+  cpu: 0.5
+  env:
+    - name: PORT
+      value: "8080"
+    - name: DB_PATH
+      value: /app/data/track.db
+  image: your-dockerhub-username/location-tracking:latest
+  memory: 512
+  port: 8080
   replicas: 1
-  containers:
-    - name: track
-      image: your-dockerhub-username/location-tracking:latest
-      ports:
-        - port: 8080
-          targetPort: 8080
-      resources:
-        cpu: 0.5
-        memory: 512Mi
-      env:
-        - name: PORT
-          value: "8080"
-      volumeMounts:
-        - name: data
-          mountPath: /app/data
-  volumes:
-    - name: data
-      emptyDir: {}

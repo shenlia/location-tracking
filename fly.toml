@@ -1,0 +1,32 @@
+app = "location-tracking"
+primary_region = "hkg"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+
+[[services]]
+  internal_port = 8080
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+  [[services.tcp_checks]]
+    interval = "15s"
+    timeout = "5s"
+    restart_limit = 0
+
+[[statics]]
+  guest_path = "/app/static"
+  url_path = "/static"
+
+[[statics]]
+  guest_path = "/app/templates"
+  url_path = "/"

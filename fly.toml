@@ -1,4 +1,4 @@
-app = "location-tracking"
+app = "location-tracking-shenlia"
 primary_region = "hkg"
 
 [build]

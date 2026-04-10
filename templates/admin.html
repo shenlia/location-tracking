@@ -132,43 +132,38 @@
 
     <!-- 创建短链接模态框 -->
     <div class="modal" id="createModal">
-        <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-content">
             <div class="modal-header">
                 <h3>创建短链接</h3>
                 <button class="close-btn" id="closeModal">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="originalUrl">目标文章URL</label>
+                    <label for="originalUrl">目标文章URL <span style="color:red">*</span></label>
                     <input type="url" id="originalUrl" placeholder="https://example.com/article/123">
                 </div>
                 
                 <div class="form-group">
-                    <label>选择诱导模板</label>
-                    <div class="template-grid" id="templateGrid"></div>
+                    <label for="induceTitle">诱导标题 <span style="color:red">*</span></label>
+                    <input type="text" id="induceTitle" placeholder="例如：您有一条未读消息">
                 </div>
 
-                <div class="form-group" id="customTitleGroup" style="display:none;">
-                    <label for="customTitle">自定义标题</label>
-                    <input type="text" id="customTitle" placeholder="输入自定义标题">
+                <div class="form-group">
+                    <label for="induceSubtitle">诱导简介（可选）</label>
+                    <input type="text" id="induceSubtitle" placeholder="例如：点击查看详情">
                 </div>
 
-                <div class="form-group" id="customSubtitleGroup" style="display:none;">
-                    <label for="customSubtitle">自定义副标题</label>
-                    <input type="text" id="customSubtitle" placeholder="输入自定义副标题">
+                <div class="form-group">
+                    <label for="induceImage">诱导图片URL（可选）</label>
+                    <input type="text" id="induceImage" placeholder="https://example.com/image.jpg">
                 </div>
 
-                <div class="form-group" id="customImageGroup" style="display:none;">
-                    <label for="customImage">自定义图片URL（可选）</label>
-                    <input type="text" id="customImage" placeholder="https://example.com/image.jpg">
-                </div>
-
-                <div class="preview-box" id="previewBox">
+                <div class="preview-box">
                     <label>预览效果</label>
                     <div class="preview-card" id="previewCard">
-                        <div class="preview-icon" id="previewIcon">⚖️</div>
-                        <div class="preview-title" id="previewTitle">法院传票</div>
-                        <div class="preview-subtitle" id="previewSubtitle">（2026粤0305民初xxx号）</div>
+                        <div class="preview-icon">📢</div>
+                        <div class="preview-title" id="previewTitle">您有一条未读消息</div>
+                        <div class="preview-subtitle" id="previewSubtitle">点击查看详情</div>
                     </div>
                 </div>
             </div>
@@ -180,35 +175,6 @@
     </div>
 
     <style>
-        .template-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 8px;
-        }
-        .template-item {
-            padding: 12px 8px;
-            border: 2px solid #eee;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.2s;
-        }
-        .template-item:hover {
-            border-color: #667eea;
-        }
-        .template-item.active {
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
-        }
-        .template-item .t-icon {
-            font-size: 24px;
-            margin-bottom: 4px;
-        }
-        .template-item .t-name {
-            font-size: 12px;
-            color: #666;
-        }
         .preview-box {
             margin-top: 16px;
             padding: 16px;
@@ -246,100 +212,34 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="/static/js/admin.js"></script>
     <script>
-        var templates = [];
-        var selectedTemplate = 'court';
-        var customTitle = '';
-        var customSubtitle = '';
-        var customImage = '';
-
-        async function loadTemplates() {
-            try {
-                const response = await fetch('/api/shortlinks/templates');
-                const result = await response.json();
-                if (result.code === 0) {
-                    templates = result.data;
-                    renderTemplates();
-                }
-            } catch (error) {
-                console.error('Failed to load templates:', error);
-            }
-        }
-
-        function renderTemplates() {
-            const grid = document.getElementById('templateGrid');
-            grid.innerHTML = templates.map(t => `
-                <div class="template-item ${t.id === selectedTemplate ? 'active' : ''}" data-id="${t.id}">
-                    <div class="t-icon">${t.icon}</div>
-                    <div class="t-name">${t.name}</div>
-                </div>
-            `).join('');
-
-            document.querySelectorAll('.template-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    selectedTemplate = this.dataset.id;
-                    document.querySelectorAll('.template-item').forEach(i => i.classList.remove('active'));
-                    this.classList.add('active');
-                    updatePreview();
-                    toggleCustomFields();
-                });
-            });
-        }
-
-        function toggleCustomFields() {
-            const customGroup = document.getElementById('customTitleGroup');
-            const subtitleGroup = document.getElementById('customSubtitleGroup');
-            const imageGroup = document.getElementById('customImageGroup');
-            
-            if (selectedTemplate === 'custom') {
-                customGroup.style.display = 'block';
-                subtitleGroup.style.display = 'block';
-                imageGroup.style.display = 'block';
-            } else {
-                customGroup.style.display = 'none';
-                subtitleGroup.style.display = 'none';
-                imageGroup.style.display = 'none';
-            }
-        }
-
-        function updatePreview() {
-            let template = templates.find(t => t.id === selectedTemplate);
-            if (!template) template = templates[0];
-            
-            document.getElementById('previewIcon').textContent = template.icon;
-            document.getElementById('previewTitle').textContent = customTitle || template.title || '标题';
-            document.getElementById('previewSubtitle').textContent = customSubtitle || template.subtitle || '副标题';
-        }
-
-        document.getElementById('customTitle').addEventListener('input', function() {
-            customTitle = this.value;
-            updatePreview();
+        document.getElementById('induceTitle').addEventListener('input', function() {
+            document.getElementById('previewTitle').textContent = this.value || '您有一条未读消息';
         });
 
-        document.getElementById('customSubtitle').addEventListener('input', function() {
-            customSubtitle = this.value;
-            updatePreview();
+        document.getElementById('induceSubtitle').addEventListener('input', function() {
+            document.getElementById('previewSubtitle').textContent = this.value || '点击查看详情';
         });
 
-        document.getElementById('customImage').addEventListener('input', function() {
-            customImage = this.value;
-        });
-
-        loadTemplates();
-
-        const originalCreateShortlink = window.createShortlink;
-        window.createShortlink = function() {
+        document.getElementById('submitBtn').onclick = function() {
             const url = document.getElementById('originalUrl').value;
+            const title = document.getElementById('induceTitle').value;
+            const subtitle = document.getElementById('induceSubtitle').value;
+            const image = document.getElementById('induceImage').value;
+
             if (!url) {
-                alert('请输入URL地址');
+                alert('请输入目标URL');
+                return;
+            }
+            if (!title) {
+                alert('请输入诱导标题');
                 return;
             }
 
             const body = {
                 url: url,
-                induce_template: selectedTemplate,
-                induce_title: customTitle,
-                induce_subtitle: customSubtitle,
-                induce_image_url: customImage
+                induce_title: title,
+                induce_subtitle: subtitle,
+                induce_image_url: image
             };
 
             fetch('/api/shortlinks/create', {
@@ -353,6 +253,9 @@
                     alert('创建成功！短链接: /' + result.data.code);
                     document.getElementById('createModal').classList.remove('active');
                     document.getElementById('originalUrl').value = '';
+                    document.getElementById('induceTitle').value = '';
+                    document.getElementById('induceSubtitle').value = '';
+                    document.getElementById('induceImage').value = '';
                     loadShortlinks();
                     loadStats();
                 } else {

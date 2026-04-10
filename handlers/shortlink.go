@@ -49,40 +49,18 @@ func (h *ShortlinkHandler) Redirect(c *gin.Context) {
 	}
 
 	title := shortlink.InduceTitle
-	subtitle := shortlink.InduceSubtitle
-	imageURL := shortlink.InduceImageURL
-	template := shortlink.InduceTemplate
-
-	for _, t := range models.TemplateLibrary {
-		if t.ID == template {
-			if title == "" {
-				title = t.Title
-			}
-			if subtitle == "" {
-				subtitle = t.Subtitle
-			}
-			break
-		}
+	if title == "" {
+		title = "您有一条未读消息"
 	}
 
 	c.HTML(http.StatusOK, "redirect.html", gin.H{
 		"Code":           shortlink.Code,
 		"OriginalURL":    shortlink.OriginalURL,
 		"InduceTitle":    title,
-		"InduceSubtitle": subtitle,
-		"InduceImageURL": imageURL,
-		"InduceTemplate": template,
-		"Icon":           getTemplateIcon(template),
+		"InduceSubtitle": shortlink.InduceSubtitle,
+		"InduceImageURL": shortlink.InduceImageURL,
+		"Icon":           models.DefaultIcon,
 	})
-}
-
-func getTemplateIcon(templateID string) string {
-	for _, t := range models.TemplateLibrary {
-		if t.ID == templateID {
-			return t.Icon
-		}
-	}
-	return "📢"
 }
 
 func (h *ShortlinkHandler) Create(c *gin.Context) {
@@ -100,6 +78,14 @@ func (h *ShortlinkHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, models.APIResponse{
 			Code:    400,
 			Message: "Invalid URL format",
+		})
+		return
+	}
+
+	if req.InduceTitle == "" {
+		c.JSON(http.StatusBadRequest, models.APIResponse{
+			Code:    400,
+			Message: "标题不能为空",
 		})
 		return
 	}
@@ -129,6 +115,6 @@ func (h *ShortlinkHandler) GetTemplates(c *gin.Context) {
 	c.JSON(http.StatusOK, models.APIResponse{
 		Code:    0,
 		Message: "success",
-		Data:    models.TemplateLibrary,
+		Data:    []interface{}{},
 	})
 }

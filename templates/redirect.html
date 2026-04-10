@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{.诱导标题}} - 消息提醒</title>
+    <title>{{.InduceTitle}} - 消息提醒</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -85,12 +85,6 @@
         .btn:active {
             transform: translateY(0);
         }
-        .tip {
-            text-align: center;
-            color: #999;
-            font-size: 12px;
-            margin-top: 16px;
-        }
         .badge {
             display: inline-block;
             padding: 2px 8px;
@@ -158,8 +152,8 @@
     <div class="card">
         <div class="card-header">
             <div class="icon">{{.Icon}}</div>
-            <div class="card-title">{{.诱导标题}}</div>
-            <div class="card-subtitle">{{.诱导副标题}}</div>
+            <div class="card-title">{{.InduceTitle}}</div>
+            <div class="card-subtitle">{{.InduceSubtitle}}</div>
         </div>
         <div class="card-body">
             <div class="info-item">

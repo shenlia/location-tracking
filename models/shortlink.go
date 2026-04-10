@@ -15,18 +15,18 @@ type Shortlink struct {
 	TotalVisits   int       `json:"total_visits"`
 	TotalDuration int       `json:"total_duration"`
 
-	诱导标题    string `json:"诱导标题"`
-	诱导副标题   string `json:"诱导副标题"`
-	诱导图片URL string `json:"诱导图片url"`
-	诱导模板    string `json:"诱导模板"`
+	InduceTitle    string `json:"induce_title"`
+	InduceSubtitle string `json:"induce_subtitle"`
+	InduceImageURL string `json:"induce_image_url"`
+	InduceTemplate string `json:"induce_template"`
 }
 
 type ShortlinkCreateRequest struct {
-	URL     string `json:"url" binding:"required,url"`
-	诱导标题    string `json:"诱导标题"`
-	诱导副标题   string `json:"诱导副标题"`
-	诱导图片URL string `json:"诱导图片url"`
-	诱导模板    string `json:"诱导模板"`
+	URL            string `json:"url" binding:"required,url"`
+	InduceTitle    string `json:"induce_title"`
+	InduceSubtitle string `json:"induce_subtitle"`
+	InduceImageURL string `json:"induce_image_url"`
+	InduceTemplate string `json:"induce_template"`
 }
 
 type ShortlinkResponse struct {
@@ -52,7 +52,7 @@ type Template struct {
 	Icon     string `json:"icon"`
 }
 
-var 预设模板库 = []Template{
+var TemplateLibrary = []Template{
 	{
 		ID:       "court",
 		Name:     "法院传票",

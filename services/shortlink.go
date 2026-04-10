@@ -37,22 +37,22 @@ func (s *ShortlinkService) Create(req *models.ShortlinkCreateRequest) (*models.S
 		}
 	}
 
-	模板 := req.诱导模板
-	if 模板 == "" {
-		模板 = "court"
+	template := req.InduceTemplate
+	if template == "" {
+		template = "court"
 	}
 
-	标题 := req.诱导标题
-	副标题 := req.诱导副标题
-	图片URL := req.诱导图片URL
+	title := req.InduceTitle
+	subtitle := req.InduceSubtitle
+	imageURL := req.InduceImageURL
 
-	for _, t := range models.预设模板库 {
-		if t.ID == 模板 {
-			if 标题 == "" {
-				标题 = t.Title
+	for _, t := range models.TemplateLibrary {
+		if t.ID == template {
+			if title == "" {
+				title = t.Title
 			}
-			if 副标题 == "" {
-				副标题 = t.Subtitle
+			if subtitle == "" {
+				subtitle = t.Subtitle
 			}
 			break
 		}
@@ -61,7 +61,7 @@ func (s *ShortlinkService) Create(req *models.ShortlinkCreateRequest) (*models.S
 	now := time.Now()
 	result, err := db.GetDB().Exec(
 		"INSERT INTO shortlinks (code, original_url, created_at, updated_at, 诱导标题, 诱导副标题, 诱导图片URL, 诱导模板) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-		code, req.URL, now, now, 标题, 副标题, 图片URL, 模板,
+		code, req.URL, now, now, title, subtitle, imageURL, template,
 	)
 	if err != nil {
 		return nil, err
@@ -73,18 +73,18 @@ func (s *ShortlinkService) Create(req *models.ShortlinkCreateRequest) (*models.S
 	}
 
 	return &models.Shortlink{
-		ID:          id,
-		Code:        code,
-		OriginalURL: req.URL,
-		CreatedAt:   now,
-		UpdatedAt:   now,
-		IsDeleted:   false,
-		IsDisabled:  false,
-		TotalVisits: 0,
-		诱导标题:        标题,
-		诱导副标题:       副标题,
-		诱导图片URL:     图片URL,
-		诱导模板:        模板,
+		ID:             id,
+		Code:           code,
+		OriginalURL:    req.URL,
+		CreatedAt:      now,
+		UpdatedAt:      now,
+		IsDeleted:      false,
+		IsDisabled:     false,
+		TotalVisits:    0,
+		InduceTitle:    title,
+		InduceSubtitle: subtitle,
+		InduceImageURL: imageURL,
+		InduceTemplate: template,
 	}, nil
 }
 
@@ -100,7 +100,7 @@ func (s *ShortlinkService) GetByCode(code string) (*models.Shortlink, error) {
 	).Scan(
 		&shortlink.ID, &shortlink.Code, &shortlink.OriginalURL, &shortlink.CreatedAt, &shortlink.UpdatedAt,
 		&shortlink.IsDeleted, &shortlink.IsDisabled, &shortlink.TotalVisits, &shortlink.TotalDuration,
-		&shortlink.诱导标题, &shortlink.诱导副标题, &shortlink.诱导图片URL, &shortlink.诱导模板,
+		&shortlink.InduceTitle, &shortlink.InduceSubtitle, &shortlink.InduceImageURL, &shortlink.InduceTemplate,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -139,11 +139,11 @@ func (s *ShortlinkService) List(page, pageSize int) ([]models.Shortlink, int, er
 
 	var shortlinks []models.Shortlink
 	for rows.Next() {
-		var s models.Shortlink
-		if err := rows.Scan(&s.ID, &s.Code, &s.OriginalURL, &s.CreatedAt, &s.UpdatedAt, &s.IsDeleted, &s.IsDisabled, &s.TotalVisits, &s.TotalDuration, &s.诱导标题, &s.诱导副标题, &s.诱导图片URL, &s.诱导模板); err != nil {
+		var sl models.Shortlink
+		if err := rows.Scan(&sl.ID, &sl.Code, &sl.OriginalURL, &sl.CreatedAt, &sl.UpdatedAt, &sl.IsDeleted, &sl.IsDisabled, &sl.TotalVisits, &sl.TotalDuration, &sl.InduceTitle, &sl.InduceSubtitle, &sl.InduceImageURL, &sl.InduceTemplate); err != nil {
 			return nil, 0, err
 		}
-		shortlinks = append(shortlinks, s)
+		shortlinks = append(shortlinks, sl)
 	}
 
 	return shortlinks, total, nil
@@ -178,7 +178,7 @@ func (s *ShortlinkService) GetByID(id int64) (*models.Shortlink, error) {
 	).Scan(
 		&shortlink.ID, &shortlink.Code, &shortlink.OriginalURL, &shortlink.CreatedAt, &shortlink.UpdatedAt,
 		&shortlink.IsDeleted, &shortlink.IsDisabled, &shortlink.TotalVisits, &shortlink.TotalDuration,
-		&shortlink.诱导标题, &shortlink.诱导副标题, &shortlink.诱导图片URL, &shortlink.诱导模板,
+		&shortlink.InduceTitle, &shortlink.InduceSubtitle, &shortlink.InduceImageURL, &shortlink.InduceTemplate,
 	)
 	if err != nil {
 		return nil, err

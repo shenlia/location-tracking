@@ -48,36 +48,36 @@ func (h *ShortlinkHandler) Redirect(c *gin.Context) {
 		return
 	}
 
-	标题 := shortlink.诱导标题
-	副标题 := shortlink.诱导副标题
-	图片URL := shortlink.诱导图片URL
-	模板 := shortlink.诱导模板
+	title := shortlink.InduceTitle
+	subtitle := shortlink.InduceSubtitle
+	imageURL := shortlink.InduceImageURL
+	template := shortlink.InduceTemplate
 
-	for _, t := range models.预设模板库 {
-		if t.ID == 模板 {
-			if 标题 == "" {
-				标题 = t.Title
+	for _, t := range models.TemplateLibrary {
+		if t.ID == template {
+			if title == "" {
+				title = t.Title
 			}
-			if 副标题 == "" {
-				副标题 = t.Subtitle
+			if subtitle == "" {
+				subtitle = t.Subtitle
 			}
 			break
 		}
 	}
 
 	c.HTML(http.StatusOK, "redirect.html", gin.H{
-		"Code":        shortlink.Code,
-		"OriginalURL": shortlink.OriginalURL,
-		"诱导标题":        标题,
-		"诱导副标题":       副标题,
-		"诱导图片URL":     图片URL,
-		"诱导模板":        模板,
-		"Icon":        getTemplateIcon(模板),
+		"Code":           shortlink.Code,
+		"OriginalURL":    shortlink.OriginalURL,
+		"InduceTitle":    title,
+		"InduceSubtitle": subtitle,
+		"InduceImageURL": imageURL,
+		"InduceTemplate": template,
+		"Icon":           getTemplateIcon(template),
 	})
 }
 
 func getTemplateIcon(templateID string) string {
-	for _, t := range models.预设模板库 {
+	for _, t := range models.TemplateLibrary {
 		if t.ID == templateID {
 			return t.Icon
 		}
@@ -129,6 +129,6 @@ func (h *ShortlinkHandler) GetTemplates(c *gin.Context) {
 	c.JSON(http.StatusOK, models.APIResponse{
 		Code:    0,
 		Message: "success",
-		Data:    models.预设模板库,
+		Data:    models.TemplateLibrary,
 	})
 }
